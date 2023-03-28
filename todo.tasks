@@ -1,0 +1,14 @@
+CLI Client:
+    ☐ Forward input over kafka to the robot broker
+    ☐ Subscribe to all events and log in the log buffer
+    ☐ Subscribe to input/ouput events and log in the text buffer
+
+Robot Broker:
+    ☐ Subscribe to all topics in kafka
+    ☐ Start with a single running conversation
+    ☐ Group output and input topics
+    ☐ Manage new subscriptions, creating a new topic with multiple messages (input, output, heartbeat)
+
+
+Message Bus:
+    ☐ Move Kafka and Zookeeper to be a standalone script instead of system services
