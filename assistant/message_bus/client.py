@@ -13,7 +13,7 @@ class MessageClient(Generic[MessageType], abc.ABC):
         pass
 
     @abc.abstractmethod
-    def read_message(self) -> MessageType:
+    def read_message(self) -> Generator[MessageType, None, None]:
         raise NotImplementedError("read_message must be implemented in a subclass.")
 
     @abc.abstractmethod
@@ -24,8 +24,8 @@ class MessageClient(Generic[MessageType], abc.ABC):
 class JsonMessageClient(MessageClient[Dict[str, Any]]):
     def __init__(self, topic: str) -> None:
         self.topic = topic
-        self.consumer: JsonConsumer = JsonConsumer(topic)
-        self.producer: JsonProducer = JsonProducer(topic)
+        self.consumer: JsonConsumer[Dict[str, Any]] = JsonConsumer(topic)
+        self.producer: JsonProducer[Dict[str, Any]] = JsonProducer(topic)
 
     def read_message(self) -> Generator[Dict[str, Any], None, None]:
         yield from self.consumer.read_message()

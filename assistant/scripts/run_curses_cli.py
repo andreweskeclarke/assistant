@@ -4,5 +4,5 @@ from assistant.plugins.cli import CursesClient
 
 if __name__ == "__main__":
     manager = AssistantManager()
-    client = CursesClient(TextMessageClient(manager.subscriptions_message_client.topic))
+    client = CursesClient(TextMessageClient(manager.subscriptions_client.topic))
     client.run()
