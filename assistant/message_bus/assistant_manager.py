@@ -1,10 +1,9 @@
-import json
 import logging
 import os
 import time
 import uuid
 from dataclasses import dataclass
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 import openai
 
@@ -24,18 +23,18 @@ class Client:
     topic: str
     description: str
 
-    def read_message(self) -> Any:
+    def read_message(self) -> Dict[str, Any]:
         self.client.read_message()
 
-    def send_message(self, *args, **kwargs) -> None:
-        self.client.send_message(*args, **kwargs)
+    def send_message(self, message: Dict[str, Any]) -> None:
+        self.client.send_message(message)
 
 
 class RoutingError(Exception):
     pass
 
 
-class MessageRouter:
+class DefaultMessageRouter:
     def __init__(self) -> None:
         self.clients: Dict[str, Client] = {}
 
@@ -70,7 +69,7 @@ class MessageRouter:
             },
         ]
         response = openai.ChatCompletion.create(
-            model="gpt-3.5-turbo",
+            model="gpt-3.5-turbo-0301",
             messages=messages,
         )
         client_uuid = response.choices[0].message.content
@@ -80,8 +79,8 @@ class MessageRouter:
 
 
 class AssistantManager:
-    def __init__(self, router) -> None:
-        self.router = router
+    def __init__(self, router: Optional[DefaultMessageRouter] = None) -> None:
+        self.router = router if router is not None else DefaultMessageRouter
         self.subscriptions_client = JsonMessageClient(SUBCRIPTIONS_TOPIC)
 
     def run(self) -> None:
@@ -119,4 +118,5 @@ class AssistantManager:
     def handle_subscriber(self, client: Client) -> None:
         for message in client.read_message():
             LOG.info('%s: "%s"', client.topic, message)
-            self.router.route_messager(message)
+            client = self.router.route_message(message)
+            client.send_message(message)
