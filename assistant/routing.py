@@ -6,7 +6,7 @@ from typing import Any
 import aio_pika
 import openai
 
-from assistant.message_bus.message import Message
+from assistant.message import Message
 
 LOG = logging.getLogger(__name__)
 INPUTS_QUEUE = "inputs"
@@ -21,7 +21,7 @@ class RoutingError(Exception):
 class Router:
     def __init__(self, connection: aio_pika.Connection, fallback_plugin: Any):
         self.connection = connection
-        self.fallback_plugin = fallback_plugin
+        self.default_plugin = fallback_plugin
         self.plugins = []
 
     def register_plugin(self, plugin):
@@ -84,17 +84,26 @@ class Router:
                 "content": (
                     "\n\n".join(
                         [msg.text]
-                        + [f"{p.name}: {p.description}" for p in self.plugins]
+                        + [
+                            f"{p.name}: {p.routing_prompt}"
+                            for p in self.plugins + [self.default_plugin]
+                        ]
+                        + [
+                            f"{self.default_plugin.name}: This is the default plugin. If no other plugins make sense, select me to reply to the message."
+                        ]
                     )
                 ),
             },
         ]
+        LOG.info("Routing (%s)", msg.uuid)
+        LOG.info(messages)
         response = openai.ChatCompletion.create(
             model="gpt-3.5-turbo-0301",
             messages=messages,
         )
         plugin_name = response.choices[0].message.content
         plugin = next(
-            (p for p in self.plugins if p.name == plugin_name), self.fallback_plugin
+            (p for p in self.plugins if p.name == plugin_name), self.default_plugin
         )
+        LOG.info("Routing to %s (%s)", plugin.name, msg.uuid)
         return plugin
