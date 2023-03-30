@@ -1,12 +1,14 @@
 import asyncio
 import logging
 import os
-from typing import Any
+import typing
 
 import aio_pika
 import openai
 
+from assistant.conversation import Conversation
 from assistant.message import Message
+from assistant.plugin import Plugin
 
 LOG = logging.getLogger(__name__)
 INPUTS_QUEUE = "inputs"
@@ -19,8 +21,9 @@ class RoutingError(Exception):
 
 
 class Router:
-    def __init__(self, connection: aio_pika.Connection, fallback_plugin: Any):
+    def __init__(self, connection: aio_pika.Connection, fallback_plugin: typing.Any):
         self.connection = connection
+        self.conversation = Conversation()
         self.default_plugin = fallback_plugin
         self.plugins = []
 
@@ -35,7 +38,7 @@ class Router:
         )
 
     @staticmethod
-    async def consume_outputs(handler: Any, channel: aio_pika.Channel):
+    async def consume_outputs(handler: typing.Any, channel: aio_pika.Channel):
         await channel.set_qos(prefetch_count=1)
         exchange = await channel.declare_exchange(
             OUTPUT_EXCHANGE, aio_pika.ExchangeType.FANOUT
@@ -55,8 +58,10 @@ class Router:
         async with message.process():
             async with self.connection.channel() as channel:
                 msg = Message.from_json(message.body.decode())
-                plugin = await self.choose_plugin(msg)
-                response = await plugin.process_message(msg)
+                self.conversation.add_user_request(msg.text)
+                plugin: Plugin = await self.choose_plugin(msg)
+                response: Message = await plugin.process_message(msg, self.conversation)
+                self.conversation.add_assistant_response(response.text)
                 exchange: aio_pika.Exchange = await channel.declare_exchange(
                     OUTPUT_EXCHANGE, aio_pika.ExchangeType.FANOUT
                 )

@@ -115,7 +115,9 @@ class CursesIOClient:
             # Display message buffer
             for i, line in enumerate(self.message_buffer[-message_buffer_height:]):
                 stdscr.addstr(
-                    log_buffer_separator_line + 1 + i, 0, str(line)[:screen_width]
+                    log_buffer_separator_line + 1 + i,
+                    0,
+                    str(line).replace("\n", "\\n")[:screen_width],
                 )
 
             # Display input buffer

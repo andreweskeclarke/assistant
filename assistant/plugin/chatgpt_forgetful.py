@@ -5,6 +5,7 @@ import os
 
 import openai
 
+from assistant.conversation import Conversation
 from assistant.message import Message
 from assistant.plugin import Plugin
 
@@ -12,7 +13,7 @@ LOG = logging.getLogger(__name__)
 openai.api_key = os.environ["OPENAI_API_KEY"]
 
 
-class ForgetfulChatGptPlugin(Plugin):
+class ChatGptForgetfulPlugin(Plugin):
     @property
     def name(self):
         return "ForgetfulChatGpt"
@@ -23,9 +24,9 @@ class ForgetfulChatGptPlugin(Plugin):
 
     @property
     def routing_prompt(self):
-        return "Use this plugin when the user wants to engage on conversation or has general knowledge and advice requests."
+        return "Use this plugin when the user has a fully stand alone question that contains no references to outside conversations or unclear pronoun references."
 
-    async def process_message(self, message: Message) -> Message:
+    async def process_message(self, message: Message, _: Conversation) -> Message:
         LOG.info("Forwarding to ChatGPT: %s", message)
         response = openai.ChatCompletion.create(
             model="gpt-3.5-turbo-0301",

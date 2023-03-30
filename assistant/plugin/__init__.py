@@ -16,5 +16,7 @@ class Plugin:
     def routing_prompt(self):
         raise NotImplementedError()
 
-    async def process_message(self, message: Message) -> Message:
+    async def process_message(
+        self, message: Message, conversation: Conversation
+    ) -> Message:
         raise NotImplementedError()

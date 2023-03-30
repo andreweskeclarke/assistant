@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import logging
 
+from assistant.conversation import Conversation
 from assistant.message import Message
 from assistant.plugin import Plugin
 
@@ -21,6 +22,6 @@ class EchoPlugin(Plugin):
     def routing_prompt(self):
         return "Only use this plugin when the user explicitly wants some text repeated or echoed."
 
-    async def process_message(self, message: Message) -> Message:
+    async def process_message(self, message: Message, _: Conversation) -> Message:
         LOG.info("Echoing: %s", message)
         return Message(message.text)
