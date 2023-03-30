@@ -70,11 +70,9 @@ class Router:
             {
                 "role": "system",
                 "content": (
-                    "You are a smart router, based on a text message you identify "
-                    "the best option out of a list of clients. The best client has a "
-                    "description that matches the messages's intent. Infer "
-                    "what the message is asking of the broader system and route it to the client most likely to achieve that goal. "
-                    "I will send you the message, followed by a list of clients, each on a new line, in the format of '<name>: <description>'. "
+                    "You are a smart router. I will send you a list of endpoints, each on a new line, in the form of '<name>: <description>'. "
+                    "The final line will be a message, in the form '--- message ---'. "
+                    "Identify the endpoint name whose description best matches the message. "
                     "Do not include any explanation, only return the name, following this format without deviation. "
                     "Your response will be a single word, the name of the matching client. "
                 ),
@@ -82,20 +80,20 @@ class Router:
             {
                 "role": "user",
                 "content": (
-                    "\n\n".join(
-                        [msg.text]
-                        + [
+                    "\n".join(
+                        [
                             f"{p.name}: {p.routing_prompt}"
                             for p in self.plugins + [self.default_plugin]
                         ]
                         + [
                             f"{self.default_plugin.name}: This is the default plugin. If no other plugins make sense, select me to reply to the message."
                         ]
+                        + [f"--- {msg.text} ---"]
                     )
                 ),
             },
         ]
-        LOG.info("Routing (%s)", msg.uuid)
+        LOG.info("Routing (%s %s)", msg.uuid, msg.text)
         LOG.info(messages)
         response = openai.ChatCompletion.create(
             model="gpt-3.5-turbo-0301",
@@ -105,5 +103,5 @@ class Router:
         plugin = next(
             (p for p in self.plugins if p.name == plugin_name), self.default_plugin
         )
-        LOG.info("Routing to %s (%s)", plugin.name, msg.uuid)
+        LOG.info("Routing to %s (%s %s)", plugin.name, msg.uuid, msg.text)
         return plugin

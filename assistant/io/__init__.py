@@ -38,7 +38,7 @@ class Output:
         async with self.connection.channel() as channel:
             await Router.consume_outputs(self._handle, channel)
             while True:
-                await asyncio.sleep(0.01)
+                await asyncio.sleep(0)
 
     async def _handle(self, msg: aio_pika.IncomingMessage):
         async with msg.process():

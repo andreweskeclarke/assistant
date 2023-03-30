@@ -215,3 +215,4 @@ tags
 
 # Conda env
 env/
+logs/

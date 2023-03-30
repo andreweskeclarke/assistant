@@ -6,6 +6,7 @@ from typing import Any, List
 import aio_pika
 
 from assistant.io import Input, Output
+from assistant.logs import tail_f_logs, tail_logs
 from assistant.message import Message
 
 
@@ -22,29 +23,33 @@ class CursesIOClient:
         def __init__(
             self,
             connection: aio_pika.Connection,
-            log_buffer: List[Any],
             message_buffer: List[Any],
         ):
             super().__init__(connection)
-            self.log_buffer = log_buffer
             self.message_buffer = message_buffer
 
         async def handle_message(self, msg: Message) -> None:
-            self.log_buffer.append(msg)
             self.message_buffer.append(f"<out> {msg.text}")
 
     def __init__(self, connection) -> None:
         self.inputs_queue = asyncio.Queue()
         self.input = CursesIOClient._In(connection, self.inputs_queue)
 
-        self.log_buffer = []
+        self.log_buffer = list(tail_logs())
         self.message_buffer = []
-        self.output = CursesIOClient._Out(
-            connection, self.log_buffer, self.message_buffer
-        )
+        self.output = CursesIOClient._Out(connection, self.message_buffer)
 
     async def run(self):
-        await asyncio.gather(self.input.run(), self.output.run(), self.run_curses_ui())
+        await asyncio.gather(
+            self.input.run(),
+            self.output.run(),
+            self.run_curses_ui(),
+            self.run_tail_logs(),
+        )
+
+    async def run_tail_logs(self):
+        async for line in tail_f_logs():
+            self.log_buffer.append(line)
 
     async def run_curses_ui(
         self,
@@ -65,10 +70,6 @@ class CursesIOClient:
         curses.init_pair(1, curses.COLOR_WHITE, curses.COLOR_CYAN)
         curses.init_pair(2, curses.COLOR_WHITE, curses.COLOR_CYAN)
 
-        # Initialize variables
-        input_buffer = []
-        scroll_pos = 0
-
         # Calculate dimensions
         screen_height, screen_width = stdscr.getmaxyx()
         screen_height = (
@@ -76,15 +77,22 @@ class CursesIOClient:
         )  # Can't write all the way to the bottom of the screen, especially in tmux
         assistant_line = 0
         separator_line = 1
-        log_buffer_height = math.floor(screen_height * 0.75) - separator_line - 1
+        log_buffer_height = math.floor(screen_height * 0.666) - separator_line - 1
         log_buffer_separator_line = separator_line + log_buffer_height + 1
         message_buffer_height = screen_height - log_buffer_height - separator_line - 3
         input_separator_line = screen_height - 1
         input_line = screen_height
 
+        # Initialize variables
+        input_buffer = []
+        scroll_pos = max(0, len(self.log_buffer) - log_buffer_height)
+
         while True:
             # Clear screen
             stdscr.clear()
+
+            # Update variables
+            scroll_pos = max(0, len(self.log_buffer) - log_buffer_height)
 
             # Draw Assistant title and separator
             stdscr.attron(curses.color_pair(1))
@@ -140,7 +148,6 @@ class CursesIOClient:
 
             # Enter
             elif key == 10:
-                self.log_buffer.append("User: " + "".join(input_buffer))
                 self.message_buffer.append("<in>  " + "".join(input_buffer))
                 await self.inputs_queue.put("".join(input_buffer))
                 input_buffer.clear()
@@ -152,7 +159,7 @@ class CursesIOClient:
             # Down arrow
             elif key == curses.KEY_DOWN:
                 scroll_pos = min(
-                    len(self.message_buffer) - log_buffer_height, scroll_pos + 1
+                    len(self.log_buffer) - log_buffer_height, scroll_pos + 1
                 )
 
             # Page Up
@@ -162,7 +169,7 @@ class CursesIOClient:
             # Page Down
             elif key == curses.KEY_NPAGE:
                 scroll_pos = min(
-                    len(self.message_buffer) - log_buffer_height,
+                    len(self.log_buffer) - log_buffer_height,
                     scroll_pos + log_buffer_height,
                 )
 
