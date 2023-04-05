@@ -1,0 +1,8 @@
+Type: Jupyter Notebook Extension
+Compatibility: 3.x, 4.x, 5.x, 6.x
+Name: Assistant
+Main: send_to_rabbitmq.js
+Link: README.md
+Description: An AI assistant can fill in the code for you
+Parameters:
+- none

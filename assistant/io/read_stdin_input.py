@@ -4,8 +4,14 @@ import aioconsole
 
 from assistant.io import Input
 
+import typing
+
 
 class ReadStdinInput(Input):
-    async def get_input_text(self) -> str:
+    @property
+    def name(self) -> str:
+        return "read-stdin"
+
+    async def get_input(self) -> typing.Tuple[str, dict]:
         message = await aioconsole.ainput("")
-        return message
+        return message, {}

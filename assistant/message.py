@@ -7,9 +7,21 @@ from attr import dataclass, field
 
 @dataclass
 class Message:
+    """
+    The atomic unit of communication across Assistant.
+    Each message corresponds to an utterance in a conversation.
+    Remember, Assitant is here to interact in a human conversations
+    - meaning human level response times and natural language text as the communication protocol.
+    """
+
     text: str = field(default="")
+    source: str = field(default="")
+    meta: dict = field(factory=dict)
     uuid: str = field(factory=lambda: str(uuid.uuid4()))
     timestamp: str = field(factory=lambda: datetime.utcnow().isoformat())
+
+    def __post_init__(self):
+        self.source = self.source.lower()
 
     def to_json(self) -> str:
         return json.dumps(self.__dict__)

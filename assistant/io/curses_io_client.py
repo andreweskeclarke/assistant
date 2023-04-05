@@ -1,7 +1,7 @@
 import asyncio
 import curses
 import math
-from typing import Any, List
+import typing
 
 import aio_pika
 
@@ -16,14 +16,19 @@ class CursesIOClient:
             super().__init__(connection)
             self.queue = queue
 
-        async def get_input_text(self) -> str:
-            return await self.queue.get()
+        @property
+        def name(self) -> str:
+            return "curses-io-client"
+
+        async def get_input(self) -> typing.Tuple[str, dict]:
+            text = await self.queue.get()
+            return text, {}
 
     class _Out(Output):
         def __init__(
             self,
             connection: aio_pika.Connection,
-            message_buffer: List[Any],
+            message_buffer: typing.List[typing.Any],
         ):
             super().__init__(connection)
             self.message_buffer = message_buffer

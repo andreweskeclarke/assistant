@@ -216,3 +216,4 @@ tags
 # Conda env
 env/
 logs/
+notebooks/

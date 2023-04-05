@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from assistant.message import Message
+from assistant.conversation import Conversation
 
 
 class Plugin:

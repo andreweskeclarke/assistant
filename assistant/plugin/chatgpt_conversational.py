@@ -31,7 +31,7 @@ class ChatGptConversationalPlugin(Plugin):
 
     @property
     def routing_prompt(self):
-        return "Use this plugin when the user wants to engage on conversation or has general knowledge and advice requests."
+        return "Use this plugin when the user wants to engage on conversation or has general knowledge and advice requests. Only use if a more specific plugin does not match the users request."
 
     async def process_message(
         self, message: Message, conversation: Conversation
