@@ -5,9 +5,9 @@ import os
 
 import openai
 
+from assistant.agent import Agent
 from assistant.conversation import Conversation
 from assistant.message import Message
-from assistant.plugin import Plugin
 
 LOG = logging.getLogger(__name__)
 openai.api_key = os.environ["OPENAI_API_KEY"]
@@ -25,10 +25,12 @@ def add_comment_markers(text):
             robot_is_commenting = not robot_is_commenting
         elif robot_is_commenting:
             lines[i] = "# " + line
+        elif "```" in line:
+            lines[i] = line.replace("```", "# ```")
     return "\n".join(lines)
 
 
-class JupyterAssistantPlugin(Plugin):
+class JupyterAssistantPlugin(Agent):
     @property
     def name(self):
         return "JupyterAssistant"

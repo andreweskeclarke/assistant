@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import json
 import uuid
 from datetime import datetime
@@ -8,9 +10,9 @@ from attr import dataclass, field
 @dataclass
 class Message:
     """
-    The atomic unit of communication across Assistant.
+    The atomic unit of communication between Users, the Assistant, and Agents.
     Each message corresponds to an utterance in a conversation.
-    Remember, Assitant is here to interact in a human conversations
+    Remember, the Assistant is here to interact in a human conversations
     - meaning human level response times and natural language text as the communication protocol.
     """
 

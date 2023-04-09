@@ -1,27 +1,30 @@
+from __future__ import annotations
+
 import dataclasses
 import typing
 
-# Todo: Too hard-coded to the OpenAI definitions of roles and messages
+AGENT = "agent"
+USER = "user"
 
 
 @dataclasses.dataclass
-class ConversationMessage:
-    role: str
+class Utterance:
+    source: str
     text: str
 
 
 @dataclasses.dataclass
 class Conversation:
-    messages: typing.List[ConversationMessage] = dataclasses.field(default_factory=list)
+    utterances: typing.List[Utterance] = dataclasses.field(default_factory=list)
 
-    def assistant_responses(self):
-        return list(filter(lambda m: m.role == "assistant", self.messages))
+    def agent_responses(self):
+        return list(filter(lambda m: m.source == AGENT, self.utterances))
 
-    def add_assistant_response(self, text: str):
-        self.messages.append(ConversationMessage("assistant", text))
+    def add_agent_response(self, text: str):
+        self.utterances.append(Utterance(AGENT, text))
 
     def user_requests(self):
-        return list(filter(lambda m: m.role == "user", self.messages))
+        return list(filter(lambda m: m.source == USER, self.utterances))
 
     def add_user_request(self, text: str):
-        self.messages.append(ConversationMessage("user", text))
+        self.utterances.append(Utterance(USER, text))

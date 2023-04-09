@@ -2,13 +2,12 @@ from __future__ import annotations
 
 import json
 import logging
-import os
 import urllib.request
 from enum import Enum
 
+from assistant.agent import Agent
 from assistant.conversation import Conversation
 from assistant.message import Message
-from assistant.plugin import Plugin
 
 LOG = logging.getLogger(__name__)
 
@@ -42,7 +41,7 @@ def _anki_invoke(action, **params):
     return response["result"]
 
 
-class AnkiPlugin(Plugin):
+class AnkiPlugin(Agent):
     def __init__(self, deck: str) -> None:
         super().__init__()
         self.deck = deck
@@ -82,8 +81,8 @@ class AnkiPlugin(Plugin):
         question_prefix = "Anki Question: "
         answer_prefix = "Anki Answer: "
         last_message = ""
-        if conversation.assistant_responses():
-            last_message = conversation.assistant_responses()[-1].text
+        if conversation.agent_responses():
+            last_message = conversation.agent_responses()[-1].text
 
         # Show the user the Anki note answer
         if last_message.startswith(question_prefix):

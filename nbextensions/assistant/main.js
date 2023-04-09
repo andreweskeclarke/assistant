@@ -30,7 +30,7 @@ define(['base/js/namespace', 'jquery'], function(Jupyter, $) {
           } else if (output["output_type"] == "error") {
             outputContents = `Error! ${output["ename"]}: ${output["evalue"]}`;
           } else { 
-            outputContents = JSON.stringify(output.toJSON());
+            outputContents = JSON.stringify(output);
           }
           cellAsText += outputContents.slice(0, 750)
         }

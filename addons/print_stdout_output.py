@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from assistant.io import Output
 from assistant.message import Message
+from assistant.output import Output
 
 
 class PrintStdoutOutput(Output):

@@ -5,22 +5,27 @@ import os
 
 import openai
 
-from assistant.conversation import Conversation, ConversationMessage
+from assistant.agent import Agent
+from assistant.conversation import Conversation, Utterance
 from assistant.message import Message
-from assistant.plugin import Plugin
 
 LOG = logging.getLogger(__name__)
 openai.api_key = os.environ["OPENAI_API_KEY"]
 
 
-def chatgpt_message(message: ConversationMessage):
+def chatgpt_message(message: Utterance):
+    opeani_source_mapping = {
+        'user': 'user',
+        'agent': 'assistant',
+        'system': 'system',
+    }
     return {
-        "role": message.role,
+        "role": opeani_source_mapping[message.source],
         "content": message.text,
     }
 
 
-class ChatGptConversationalPlugin(Plugin):
+class ChatGptConversationalPlugin(Agent):
     @property
     def name(self):
         return "ChatGptConversational"
@@ -41,7 +46,7 @@ class ChatGptConversationalPlugin(Plugin):
             model="gpt-3.5-turbo-0301",
             messages=[
                 {"role": "system", "content": "You are a helpful assistant."},
-                *map(chatgpt_message, conversation.messages),
+                *map(chatgpt_message, conversation.utterances),
             ],
         )
         response_content = response.choices[0].message.content

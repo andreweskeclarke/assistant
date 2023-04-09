@@ -5,15 +5,15 @@ import os
 
 import openai
 
+from assistant.agent import Agent
 from assistant.conversation import Conversation
 from assistant.message import Message
-from assistant.plugin import Plugin
 
 LOG = logging.getLogger(__name__)
 openai.api_key = os.environ["OPENAI_API_KEY"]
 
 
-class ChatGptForgetfulPlugin(Plugin):
+class ChatGptForgetfulPlugin(Agent):
     @property
     def name(self):
         return "ForgetfulChatGpt"

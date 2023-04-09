@@ -5,19 +5,19 @@ import typing
 
 import openai
 
+from assistant.agent import Agent
+from assistant.agent_router import AgentRouter
 from assistant.conversation import Conversation
 from assistant.message import Message
-from assistant.plugin import Plugin
-from assistant.plugin_picker import PluginPicker
 
 LOG = logging.getLogger(__name__)
 openai.api_key = os.environ["OPENAI_API_KEY"]
 
 
-class ChatGptPluginPicker(PluginPicker):
-    async def pick(
-        self, message: Message, _: Conversation, plugins: typing.List[Plugin]
-    ) -> typing.Optional[Plugin]:
+class ChatGptPluginPicker(AgentRouter):
+    async def route(
+        self, message: Message, _: Conversation, plugins: typing.List[Agent]
+    ) -> typing.Optional[Agent]:
         prompt = (
             "I will send you a JSON object with a list of plugins and a request string. "
             "I want you to determine which plugin should be used to handle the request, "

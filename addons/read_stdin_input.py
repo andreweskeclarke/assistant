@@ -1,10 +1,10 @@
 from __future__ import annotations
 
+import typing
+
 import aioconsole
 
-from assistant.io import Input
-
-import typing
+from assistant.input import Input
 
 
 class ReadStdinInput(Input):

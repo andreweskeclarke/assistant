@@ -1,13 +1,15 @@
+from __future__ import annotations
+
 import asyncio
 import logging
 import typing
 
 import aio_pika
 
+from assistant.agent import Agent
+from assistant.agent_router import AgentRouter
 from assistant.conversation import Conversation
 from assistant.message import Message
-from assistant.plugin import Plugin
-from assistant.plugin_picker import PluginPicker
 
 LOG = logging.getLogger(__name__)
 INPUTS_QUEUE = "inputs"
@@ -35,11 +37,11 @@ async def bind_output_handler(handler: typing.Any, channel: aio_pika.Channel):
     await queue.consume(handler)
 
 
-class Router:
+class Assistant:
     def __init__(
         self,
         connection: aio_pika.Connection,
-        plugin_picker: PluginPicker,
+        plugin_picker: AgentRouter,
         fallback_plugin: typing.Any,
     ):
         self.connection = connection
@@ -56,7 +58,7 @@ class Router:
             queue = await channel.declare_queue(INPUTS_QUEUE)
             await queue.consume(self.on_input_message)
             while True:
-                await asyncio.sleep(0)
+                await asyncio.sleep(0.1)
 
     async def on_input_message(self, message: aio_pika.IncomingMessage):
         async with message.process():
@@ -65,7 +67,7 @@ class Router:
                 self.conversation.add_user_request(msg.text)
 
                 LOG.info("Routing (%s %s)", msg.uuid, msg.text)
-                plugin: typing.Optional[Plugin] = await self.plugin_picker.pick(
+                plugin: typing.Optional[Agent] = await self.plugin_picker.route(
                     msg, self.conversation, self.plugins
                 )
                 if plugin is None:
@@ -73,7 +75,7 @@ class Router:
                 LOG.info("Routing to %s (%s %s)", plugin.name, msg.uuid, msg.text)
 
                 response: Message = await plugin.process_message(msg, self.conversation)
-                self.conversation.add_assistant_response(response.text)
+                self.conversation.add_agent_response(response.text)
                 exchange: aio_pika.Exchange = await channel.declare_exchange(
                     OUTPUT_EXCHANGE, aio_pika.ExchangeType.FANOUT
                 )

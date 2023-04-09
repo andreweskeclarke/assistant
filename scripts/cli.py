@@ -5,8 +5,8 @@ import logging
 
 import aio_pika
 
-from assistant.io.curses_io_client import CursesIOClient
-from assistant.logs import init_logging
+from addons.curses_io_client import CursesIOClient
+from assistant.util.logging import init_logging
 
 LOG = logging.getLogger(__name__)
 

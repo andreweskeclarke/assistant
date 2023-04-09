@@ -7,7 +7,8 @@ import tornado.ioloop
 import tornado.web
 import tornado.websocket
 
-from assistant.io import Input, Output
+from assistant.input import Input
+from assistant.output import Output
 from assistant.message import Message
 
 LOG = logging.getLogger(__name__)

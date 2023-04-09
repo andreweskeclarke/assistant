@@ -2,14 +2,14 @@ from __future__ import annotations
 
 import logging
 
+from assistant.agent import Agent
 from assistant.conversation import Conversation
 from assistant.message import Message
-from assistant.plugin import Plugin
 
 LOG = logging.getLogger(__name__)
 
 
-class EchoPlugin(Plugin):
+class EchoPlugin(Agent):
     @property
     def name(self):
         return "Echo"

@@ -5,8 +5,6 @@ import openai
 import requests
 import wikipediaapi
 
-from assistant.message_bus.client import TextMessageClient
-
 openai.organization = os.getenv("OPENAI_API_ORG")
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
@@ -20,7 +18,7 @@ class WikipediaEnglishPlugin:
         "message and returns a summary of the Wikipedia page for that entity."
     )
 
-    def __init__(self, message_client: TextMessageClient):
+    def __init__(self, message_client):
         self.message_client = message_client
         self.wiki = wikipediaapi.Wikipedia("en")
 

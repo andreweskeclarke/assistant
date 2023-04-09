@@ -1,10 +1,8 @@
-import asyncio
-import itertools
+from __future__ import annotations
+
 import logging
 import pathlib
 import sys
-
-from aiostream import stream
 
 LOG_DIR = pathlib.Path("./logs/")
 
@@ -28,31 +26,3 @@ def init_logging(module_name: str, log_to_stderr: bool = True):
     file_handler.setLevel(logging.INFO)
     file_handler.setFormatter(formatter)
     logger.addHandler(file_handler)
-
-
-async def tail_f(log_file: pathlib.Path):
-    with log_file.open("r") as file:
-        while line := file.readline():
-            pass
-
-        while True:
-            line = file.readline()
-            if line:
-                yield line.strip()
-            else:
-                await asyncio.sleep(0)
-
-
-async def tail_f_logs():
-    tails = stream.merge(*[tail_f(log) for log in LOG_DIR.glob("*.log")])
-    async with tails.stream() as tail_stream:
-        async for line in tail_stream:
-            yield line
-
-
-def tail(log_file: pathlib.Path):
-    return log_file.read_text().splitlines()[:-100]
-
-
-def tail_logs():
-    return itertools.chain.from_iterable(tail(log) for log in LOG_DIR.glob("*.log"))
