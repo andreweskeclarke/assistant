@@ -21,10 +21,10 @@ async def main():
     connection = await aio_pika.connect_robust("amqp://guest:guest@localhost/")
     router = Assistant(
         connection,
-        plugin_picker=ChatGptPluginPicker(),
-        fallback_plugin=ChatGptConversationalPlugin(),
+        router=ChatGptPluginPicker(),
+        fallback_agent=ChatGptConversationalPlugin(),
     )
-    router.register_plugin(JupyterAssistantPlugin())
+    router.register_agent(JupyterAssistantPlugin())
 
     jupyter_assistant_server = JupyterAssistantIoClient(connection)
 

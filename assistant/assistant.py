@@ -41,17 +41,17 @@ class Assistant:
     def __init__(
         self,
         connection: aio_pika.Connection,
-        plugin_picker: AgentRouter,
-        fallback_plugin: typing.Any,
+        router: AgentRouter,
+        fallback_agent: typing.Any,
     ):
         self.connection = connection
         self.conversation = Conversation()
-        self.default_plugin = fallback_plugin
-        self.plugins = []
-        self.plugin_picker = plugin_picker
+        self.fallback_agent = fallback_agent
+        self.agents = []
+        self.router = router
 
-    def register_plugin(self, plugin):
-        self.plugins.append(plugin)
+    def register_agent(self, agent):
+        self.agents.append(agent)
 
     async def run(self):
         async with self.connection.channel() as channel:
@@ -67,14 +67,14 @@ class Assistant:
                 self.conversation.add_user_request(msg.text)
 
                 LOG.info("Routing (%s %s)", msg.uuid, msg.text)
-                plugin: typing.Optional[Agent] = await self.plugin_picker.route(
-                    msg, self.conversation, self.plugins
+                agent: typing.Optional[Agent] = await self.router.route(
+                    msg, self.conversation, self.agents
                 )
-                if plugin is None:
-                    plugin = self.default_plugin
-                LOG.info("Routing to %s (%s %s)", plugin.name, msg.uuid, msg.text)
+                if agent is None:
+                    agent = self.fallback_agent
+                LOG.info("Routing to %s (%s %s)", agent.name, msg.uuid, msg.text)
 
-                response: Message = await plugin.process_message(msg, self.conversation)
+                response: Message = await agent.process_message(msg, self.conversation)
                 self.conversation.add_agent_response(response.text)
                 exchange: aio_pika.Exchange = await channel.declare_exchange(
                     OUTPUT_EXCHANGE, aio_pika.ExchangeType.FANOUT
