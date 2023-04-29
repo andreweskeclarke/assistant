@@ -30,6 +30,7 @@ class Output:
 
     async def run(self) -> None:
         async with self.connection.channel() as channel:
+            LOG.info("Started output")
             await bind_output_handler(self._message_handler, channel)
             while True:
                 await asyncio.sleep(0.1)

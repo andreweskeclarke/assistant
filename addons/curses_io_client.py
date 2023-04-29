@@ -39,7 +39,9 @@ def tail(log_file: pathlib.Path):
 
 
 def tail_logs():
-    return itertools.chain.from_iterable(tail(log) for log in logging.LOG_DIR.glob("*.log"))
+    return itertools.chain.from_iterable(
+        tail(log) for log in logging.LOG_DIR.glob("*.log")
+    )
 
 
 class CursesIOClient:
@@ -116,7 +118,9 @@ class CursesIOClient:
             separator_line = 1
             log_buffer_height = math.floor(screen_height * 0.666) - separator_line - 1
             log_buffer_separator_line = separator_line + log_buffer_height + 1
-            message_buffer_height = screen_height - log_buffer_height - separator_line - 3
+            message_buffer_height = (
+                screen_height - log_buffer_height - separator_line - 3
+            )
             input_separator_line = screen_height - 1
             input_line = screen_height
 
@@ -163,7 +167,9 @@ class CursesIOClient:
                     input_line,
                     0,
                     "> "
-                    + "".join(input_buffer).ljust(screen_width - 2)[-(screen_width - 2) :],
+                    + "".join(input_buffer).ljust(screen_width - 2)[
+                        -(screen_width - 2) :
+                    ],
                 )
 
                 # Refresh screen
@@ -219,11 +225,6 @@ class CursesIOClient:
                     if scroll_pos == len(self.log_buffer) - log_buffer_height:
                         tailing_logs = True
 
-                # Jump to bottom, tail logs
-                elif key == 71:  # Capital 'G'
-                    scroll_pos = max(0, len(self.log_buffer) - log_buffer_height)
-                    tailing_logs = True
-
                 # Regular characters
                 elif key != -1:
                     input_buffer.append(chr(key))
@@ -233,4 +234,3 @@ class CursesIOClient:
             curses.echo()
             curses.nocbreak()
             curses.endwin()
-

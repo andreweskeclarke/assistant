@@ -219,3 +219,4 @@ logs/
 notebooks/
 **/node_modules/
 vscode-extension/out/**
+pretrained_models/
