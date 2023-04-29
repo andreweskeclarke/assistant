@@ -3,8 +3,8 @@ from __future__ import annotations
 import logging
 import typing
 
-from assistant.message import Message
 from assistant.assistant import publish_input
+from assistant.message import Message
 
 if typing.TYPE_CHECKING:
     import aio_pika
