@@ -14,7 +14,7 @@ LOG = logging.getLogger(__name__)
 openai.api_key = os.environ["OPENAI_API_KEY"]
 
 
-class ChatGptPluginPicker(AgentRouter):
+class ChatGptAgentRouter(AgentRouter):
     async def route(
         self, message: Message, _: Conversation, plugins: typing.List[Agent]
     ) -> typing.Optional[Agent]:

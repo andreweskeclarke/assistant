@@ -38,7 +38,7 @@ async def tail_f(log_file: pathlib.Path):
             pass
 
         while True:
-            line = file.readline()demmmm
+            line = file.readline()
             if line:
                 yield line.strip()
             else:

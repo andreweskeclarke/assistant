@@ -6,7 +6,7 @@ import logging
 import aio_pika
 
 from addons.chatgpt_conversational import ChatGptConversationalPlugin
-from addons.chatgpt_picker import ChatGptPluginPicker
+from addons.chatgpt_agent_router import ChatGptAgentRouter
 from addons.jupyter_assistant import JupyterAssistantPlugin
 from addons.jupyter_assistant_io_client import JupyterAssistantIoClient
 from assistant.assistant import Assistant
@@ -21,7 +21,7 @@ async def main():
     connection = await aio_pika.connect_robust("amqp://guest:guest@localhost/")
     router = Assistant(
         connection,
-        router=ChatGptPluginPicker(),
+        router=ChatGptAgentRouter(),
         fallback_agent=ChatGptConversationalPlugin(),
     )
     router.register_agent(JupyterAssistantPlugin())
