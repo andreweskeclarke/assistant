@@ -2,7 +2,7 @@ import * as vscode from "vscode";
 import { Configuration, OpenAIApi } from "openai";
 
 const configuration = new Configuration({
-  apiKey: "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",
+  apiKey: "",
 });
 const openai = new OpenAIApi(configuration);
 
