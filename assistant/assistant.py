@@ -6,10 +6,10 @@ import typing
 
 import aio_pika
 
+from assistant.agent import Agent
 from assistant.agent_router import AgentRouter
 from assistant.conversation import Conversation
 from assistant.message import Message
-from assistant.agent import Agent
 
 LOG = logging.getLogger(__name__)
 INPUTS_QUEUE = "inputs"
@@ -87,9 +87,11 @@ class Assistant:
 
                 response: Message = await agent.process_message(msg, self.conversation)
                 self.conversation.add_agent_response(response.text)
-                exchange: aio_pika.abc.AbstractExchange = await channel.declare_exchange(
-                    OUTPUT_EXCHANGE,
-                    aio_pika.ExchangeType.FANOUT,
+                exchange: aio_pika.abc.AbstractExchange = (
+                    await channel.declare_exchange(
+                        OUTPUT_EXCHANGE,
+                        aio_pika.ExchangeType.FANOUT,
+                    )
                 )
                 await exchange.publish(
                     aio_pika.Message(body=response.to_json().encode()),

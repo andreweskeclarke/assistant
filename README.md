@@ -15,3 +15,13 @@ Everything is sent as messages over RabbitMQ. There are a few components:
 4. Agent - any plugin that can react to an input message (Wikipedia browser, Anki card reviewer, code editor, etc)
 
 5. Output modules - code that can send output back to the user (Text to Speech, CLI, Logging, etc)
+
+
+# Deployment
+
+I currently run on Azure. For my own memory and future reference:
+1. I configured my domain name registrar to use Azure's name servers.
+1. I have Azure DNS zones configured to resolve to my public IP address.
+2. Azure manages my public IP, pointing to a dedicated VM.
+3. On the VM, I manually: installed conda, installed apache, cloned my git repo
+4. Then, everything else was normal dev stuff - conda install... etc
