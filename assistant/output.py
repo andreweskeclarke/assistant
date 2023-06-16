@@ -38,7 +38,7 @@ class Output:
     async def _message_handler(self, msg: aio_pika.IncomingMessage):
         async with msg.process():
             msg = Message.from_json(msg.body.decode())
-            LOG.info("Output: %s", msg)
+            LOG.info("Output: %s", msg.short_text())
             await self.handle_message(msg)
 
     async def handle_message(self, msg: Message) -> None:

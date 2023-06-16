@@ -42,7 +42,7 @@ def _anki_invoke(action, **params):
 
 
 class AnkiPlugin(Agent):
-    def __init__(self, deck: str) -> None:
+    def __init__(self, deck: str = 'Gigadeck') -> None:
         super().__init__()
         self.deck = deck
 

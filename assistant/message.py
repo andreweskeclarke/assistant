@@ -31,3 +31,6 @@ class Message:
     @classmethod
     def from_json(cls, json_str: str) -> "Message":
         return cls(**json.loads(json_str))
+
+    def short_text(self):
+        return "".join(self.text.splitlines())[:100]

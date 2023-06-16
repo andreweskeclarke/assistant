@@ -18,7 +18,17 @@
         "command": "assistant.run",
         "title": "Run Assistant"
       }
-    ]
+    ],
+    "configuration": {
+      "title": "Assistant",
+      "properties": {
+        "assistant.openaikey": {
+          "type": "string",
+          "default": false,
+          "description": "Open AI Key"
+        }
+      }
+    }
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",

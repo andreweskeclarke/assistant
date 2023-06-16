@@ -46,7 +46,7 @@ class Input:
                     source=self.name + ".input",
                     meta=meta,
                 )
-                LOG.info("Input: %s", msg)
+                LOG.info("Input: %s", msg.short_text())
                 await publish_input(msg, channel)
 
     async def get_input(self) -> typing.Tuple[str, dict]:

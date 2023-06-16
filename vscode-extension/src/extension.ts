@@ -1,15 +1,20 @@
 import * as vscode from "vscode";
 import { Configuration, OpenAIApi } from "openai";
 
-const configuration = new Configuration({
-  apiKey: "",
-});
-const openai = new OpenAIApi(configuration);
+let openai: OpenAIApi | undefined = undefined;
 
 const openAiRequest = async (text: string) => {
-  // This function sends a request to OpenAI and returns the response
-  console.time("openAiRequest");
+  // Create a new OpenAI instance if it doesn't exist
+  if (openai === undefined) {
+    const openaiApiKey: string =
+      vscode.workspace.getConfiguration("assistant").get("openaikey") || "";
+    const configuration = new Configuration({
+      apiKey: openaiApiKey,
+    });
+    openai = new OpenAIApi(configuration);
+  }
 
+  console.time("openAiRequest");
   console.log("Sending OpenAI request...");
   const response = await openai.createChatCompletion({
     model: "gpt-3.5-turbo",
@@ -55,16 +60,36 @@ export function activate(context: vscode.ExtensionContext) {
         myProvider.onDidChangeEmitter.fire(uri);
       };
       try {
-        // Get the currently highlighted text
+        let highlightedText = "";
         const editor = vscode.window.activeTextEditor;
         if (editor === undefined) {
           vscode.window.showInformationMessage("No active Text Editor");
           return;
         }
-        const document = editor.document;
-        const highlightedText = document.getText(
-          document.getWordRangeAtPosition(editor.selection.active)
-        );
+        if (editor.selection && !editor.selection.isEmpty) {
+          // Use the highlighted text
+          const selectionRange = new vscode.Range(
+            editor.selection.start.line,
+            editor.selection.start.character,
+            editor.selection.end.line,
+            editor.selection.end.character
+          );
+          highlightedText = editor.document.getText(selectionRange);
+        } else {
+          // Use the active file's text
+          highlightedText = editor.document.getText();
+        }
+
+        // Ask for what the User wants to do
+        const userRequest = await vscode.window.showInputBox({
+          placeHolder: "Help me with...",
+          prompt: "Ask Assistant to help me with",
+        });
+        if (userRequest === "" || userRequest === undefined) {
+          vscode.window.showErrorMessage(
+            "You have to ask the assistant for help with something"
+          );
+        }
 
         // Open a new document with the assistant-scheme
         const doc = await vscode.workspace.openTextDocument(uri);
@@ -76,8 +101,9 @@ export function activate(context: vscode.ExtensionContext) {
         });
 
         // Send the highlighted text to OpenAI and update the assistant document
-        updateText('Asking Assistant...\n\n"""\n' + highlightedText + '\n"""');
-        const response = await openAiRequest(highlightedText);
+        const request = userRequest + '\n"""\n' + highlightedText + '\n"""\n';
+        updateText("Asking Assistant...\n" + request);
+        const response = await openAiRequest(request);
         updateText(
           response.data?.choices[0]?.message?.content ||
             JSON.stringify(response)

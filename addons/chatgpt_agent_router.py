@@ -18,6 +18,7 @@ class ChatGptAgentRouter(AgentRouter):
     async def route(
         self, message: Message, _: Conversation, plugins: typing.List[Agent]
     ) -> typing.Optional[Agent]:
+        LOG.info(plugins)
         prompt = (
             "I will send you a JSON object with a list of plugins and a request string. "
             "I want you to determine which plugin should be used to handle the request, "
@@ -28,7 +29,6 @@ class ChatGptAgentRouter(AgentRouter):
             "Your response will be a single word, the plugin name. "
             "Follow this format without deviation."
         )
-        max_length = 3000 - len(prompt)
         messages = [
             {
                 "role": "user",
@@ -36,16 +36,14 @@ class ChatGptAgentRouter(AgentRouter):
             },
             {
                 "role": "user",
-                "content": (
-                    json.dumps(
-                        {
-                            "plugins": [
-                                {"name": p.name, "description": p.routing_prompt}
-                                for p in plugins
-                            ],
-                            "request": message.text,
-                        }
-                    )[:-max_length]
+                "content": json.dumps(
+                    {
+                        "plugins": [
+                            {"name": p.name, "description": p.routing_prompt}
+                            for p in plugins
+                        ],
+                        "request": message.text,
+                    }
                 ),
             },
         ]

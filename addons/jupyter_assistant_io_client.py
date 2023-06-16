@@ -8,8 +8,8 @@ import tornado.web
 import tornado.websocket
 
 from assistant.input import Input
-from assistant.output import Output
 from assistant.message import Message
+from assistant.output import Output
 
 LOG = logging.getLogger(__name__)
 
@@ -25,9 +25,10 @@ class _In(Input):
 
     async def get_input(self) -> typing.Tuple[str, dict]:
         text = await self.queue.get()
-        prompt = "Use a Jupyter plugin when available. This is Jupyter code that I want assistance with:\n"
-        LOG.info("Forwarding: %s", prompt + text)
-        return prompt + text, {}
+        # prompt = "Use a Jupyter plugin when available. This is Jupyter code that I want assistance with:\n"
+        # LOG.info("Forwarding: %s", prompt + text)
+        # return prompt + text, {}
+        return text, {}
 
 
 class _Out(Output):

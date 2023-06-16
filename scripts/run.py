@@ -5,9 +5,10 @@ import logging
 
 import aio_pika
 
-from addons.chatgpt_conversational import ChatGptConversationalPlugin
+from addons.anki import AnkiPlugin
 from addons.chatgpt_agent_router import ChatGptAgentRouter
-from addons.jupyter_assistant import JupyterAssistantPlugin
+from addons.chatgpt_conversational import ChatGptConversationalPlugin
+from addons.jupyter_assistant_agent import JupyterAssistantAgent
 from addons.jupyter_assistant_io_client import JupyterAssistantIoClient
 from assistant.assistant import Assistant
 from assistant.util.logging import init_logging
@@ -24,7 +25,8 @@ async def main():
         router=ChatGptAgentRouter(),
         fallback_agent=ChatGptConversationalPlugin(),
     )
-    router.register_agent(JupyterAssistantPlugin())
+    router.register_agent(JupyterAssistantAgent())
+    router.register_agent(AnkiPlugin())
 
     jupyter_assistant_server = JupyterAssistantIoClient(connection)
 

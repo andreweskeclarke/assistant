@@ -30,7 +30,7 @@ def add_comment_markers(text):
     return "\n".join(lines)
 
 
-class JupyterAssistantPlugin(Agent):
+class JupyterAssistantAgent(Agent):
     @property
     def name(self):
         return "JupyterAssistant"
@@ -45,21 +45,21 @@ class JupyterAssistantPlugin(Agent):
 
     async def process_message(self, message: Message, _b: Conversation) -> Message:
         prompt = "The following is some Jupyter python code, its outputs, and a comment asking you to fill in some code. Please return the python code wrapped as ```python```:\n"
-        max_length = 3000 - len(prompt)
-
-        LOG.info("Forwarding to ChatGPT: %s", message)
+        max_length = 10000 - len(prompt)
+        messages = [
+            {
+                "role": "system",
+                "content": "You are a helpful Python Jupyter coding assistant.",
+            },
+            {
+                "role": "user",
+                "content": prompt + message.text[-max_length:],
+            },
+        ]
+        LOG.info("Forwarding to ChatGPT:\n%s", messages)
         response = openai.ChatCompletion.create(
-            model="gpt-3.5-turbo-0301",
-            messages=[
-                {
-                    "role": "system",
-                    "content": "You are a helpful Python Jupyter coding assistant.",
-                },
-                {
-                    "role": "user",
-                    "content": prompt + message.text[-max_length:],
-                },
-            ],
+            model="gpt-4",
+            messages=messages,
         )
         response_content = add_comment_markers(response.choices[0].message.content)
         LOG.info("ChatGPT replied: '%s'", response_content)

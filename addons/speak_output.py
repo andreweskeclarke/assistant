@@ -5,6 +5,7 @@ import logging
 import os
 import pathlib
 import pickle
+import random
 import re
 import shutil
 import subprocess
@@ -127,17 +128,23 @@ def run_tts(phrase: str, logger: logging.Logger) -> str:
     return LOCAL_TTS.run(phrase, logger)
 
 
+def startup_message():
+    messages = [
+        "Ready for action Ryder sir!",
+        "Green means go!",
+        "Chase is on the case!",
+        "I'm fired up!",
+    ]
+    return random.choice(messages)
+
+
 class SpeakOutput(Output):
     def __init__(self, connection):
         super().__init__(connection)
         self.pool_executor = concurrent.futures.ProcessPoolExecutor(
             max_workers=1, initializer=init_tts
         )
-        self.play(
-            self.pool_executor.submit(
-                run_tts, "Ready and running, Ryder sir!", LOG
-            ).result()
-        )
+        self.play(self.pool_executor.submit(run_tts, startup_message(), LOG).result())
 
     async def handle_message(self, msg: Message) -> None:
         phrases = list(
