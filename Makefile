@@ -18,7 +18,7 @@ lint: black
 
 .PHONY: freeze
 freeze:
-	$(CONDA_BIN)/pip freeze > requirements.txt
+	conda env export | grep -v "^prefix:" > environment.yml
 
 .PHONY: test
 test: lint
