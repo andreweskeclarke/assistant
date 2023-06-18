@@ -20,6 +20,10 @@ lint: black
 freeze:
 	conda env export | grep -v "^prefix:" > environment.yml
 
+.PHONY: update
+update:
+	conda env update --prefix ./env --file environment.yml --prune
+
 .PHONY: test
 test: lint
 	$(PYTHON) -m unittest discover -s ./tests/
