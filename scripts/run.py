@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 from __future__ import annotations
 
 import asyncio
@@ -5,11 +7,8 @@ import logging
 
 import aio_pika
 
-from addons.anki import AnkiPlugin
-from addons.chatgpt_agent_router import ChatGptAgentRouter
-from addons.chatgpt_conversational import ChatGptConversationalPlugin
-from addons.jupyter_assistant_agent import JupyterAssistantAgent
-from addons.jupyter_assistant_io_client import JupyterAssistantIoClient
+from addons.chatgpt_texting import ChatGptTextingPlugin
+from addons.none_router import NoneRouter
 from assistant.assistant import Assistant
 from assistant.util.logging import init_logging
 
@@ -22,15 +21,11 @@ async def main():
     connection = await aio_pika.connect_robust("amqp://guest:guest@localhost/")
     router = Assistant(
         connection,
-        router=ChatGptAgentRouter(),
-        fallback_agent=ChatGptConversationalPlugin(),
+        router=NoneRouter(),
+        fallback_agent=ChatGptTextingPlugin(),
     )
-    router.register_agent(JupyterAssistantAgent())
-    router.register_agent(AnkiPlugin())
 
-    jupyter_assistant_server = JupyterAssistantIoClient(connection)
-
-    await asyncio.gather(router.run(), jupyter_assistant_server.run())
+    await asyncio.gather(router.run())
 
 
 if __name__ == "__main__":
