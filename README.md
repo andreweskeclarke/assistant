@@ -23,5 +23,6 @@ I currently run on Azure. For my own memory and future reference:
 1. I configured my domain name registrar to use Azure's name servers.
 1. I have Azure DNS zones configured to resolve to my public IP address.
 2. Azure manages my public IP, pointing to a dedicated VM.
-3. On the VM, I manually: installed conda, installed apache, cloned my git repo
-4. Then, everything else was normal dev stuff - conda install... etc
+3. On the VM, I manually: installed conda, installed apache, configured apache. cloned my git repo, installed rabbitmq
+4. I also installed my dotfiles
+5. Then, everything else was normal dev stuff - conda install... etc
