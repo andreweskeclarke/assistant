@@ -47,7 +47,7 @@ async def main():
     app = tornado.web.Application(
         [
             (r"/", MainHandler),
-            (r"/", SmsHandler, dict(sms_input_client=SmsClientInput(connection))),
+            (r"/sms", SmsHandler, dict(sms_input_client=SmsClientInput(connection))),
         ]
     )
     app.listen(8080)
