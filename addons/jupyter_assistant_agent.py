@@ -31,19 +31,20 @@ def add_comment_markers(text):
 
 
 class JupyterAssistantAgent(Agent):
-    @property
-    def name(self):
+    @staticmethod
+    def name():
         return "JupyterAssistant"
 
-    @property
-    def description(self):
+    @staticmethod
+    def description():
         return "This Jupyter assistant can help uses auto complete their code."
 
-    @property
-    def routing_prompt(self):
+    @staticmethod
+    def routing_prompt():
         return "Receives Jupyter code, cells, and suggestions and auto completes a new cell based on the user request."
 
-    async def process_message(self, message: Message, _b: Conversation) -> Message:
+    async def reply_to(self, conversation: Conversation) -> Message:
+        message = conversation.last_message()
         prompt = "The following is some Jupyter python code, its outputs, and a comment asking you to fill in some code. Please return the python code wrapped as ```python```:\n"
         max_length = 10000 - len(prompt)
         messages = [

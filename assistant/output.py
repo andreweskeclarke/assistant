@@ -41,3 +41,10 @@ class Output:
 
     async def handle_message(self, msg: Message) -> None:
         raise NotImplementedError()
+
+
+class PrintStdoutOutput(Output):
+    """A simple output that prints messages to stdout."""
+
+    async def handle_message(self, msg: Message) -> None:
+        print(f"{msg.text}")

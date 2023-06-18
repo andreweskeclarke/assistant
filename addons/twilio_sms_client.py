@@ -6,6 +6,7 @@ import dataclasses
 import logging
 import os
 import typing
+import uuid
 
 import aio_pika
 from twilio.rest import Client
@@ -32,25 +33,28 @@ class SmsClientInput(Input):
     def __init__(self, connection: aio_pika.Connection):
         super().__init__(connection)
         self.queue = asyncio.Queue()
-        self.text_chains = collections.defaultdict(list)
+        self.sms_conversation_uuids = dict()
 
-    @property
-    def name(self) -> str:
+    @staticmethod
+    def name() -> str:
         return "twilio-sms-io-client"
 
-    async def get_input(self) -> typing.Tuple[str, dict]:
+    async def get_input(self) -> typing.Tuple[str, str, dict]:
         text: SmsText = await self.queue.get()
-        text_chain = self.text_chains[text.from_number]
-        text_chain.append(f"{text.from_number},{text.text_message}")
-        for t in text_chain:
-            LOG.info(t)
-        text_chain_as_content = "\n".join(text_chain)
-        return text_chain_as_content, {"phone_number": text.from_number, "respond_as_sms": True}
+        if text.from_number not in self.sms_conversation_uuids:
+            self.sms_conversation_uuids[text.from_number] = str(uuid.uuid4())
+        return (
+            text.text_message,
+            self.sms_conversation_uuids[text.from_number],
+            {
+                "phone_number": text.from_number,
+            },
+        )
 
 
 class SmsClientOutput(Output):
     async def handle_message(self, msg: Message) -> None:
-        if msg.meta.get("respond_as_sms", False):
+        if msg.source == SmsClientInput.name():
             LOG.info(msg)
             phone_number = msg.meta["phone_number"]
             text_message = msg.text
@@ -60,4 +64,4 @@ class SmsClientOutput(Output):
             )
             LOG.info(f"SMS sent to {phone_number}: {text_message}")
         else:
-            LOG.info(f"Message ignored: {str(msg)[:100]}")
+            LOG.info(f"Message ignored: {msg.uuid}")

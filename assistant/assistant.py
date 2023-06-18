@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import collections
 import logging
 import typing
 
@@ -42,11 +43,9 @@ class Assistant:
         self,
         connection: aio_pika.Connection,
         router: AgentRouter,
-        fallback_agent: Agent,
     ) -> None:
         self.connection = connection
-        self.conversation = Conversation()
-        self.fallback_agent = fallback_agent
+        self.conversations: typing.Dict[str, Conversation] = collections.defaultdict()
         self.agents: typing.List[Agent] = []
         self.router = router
 
@@ -61,32 +60,18 @@ class Assistant:
                 await asyncio.sleep(0.1)
 
     async def on_input_message(
-        self, message: aio_pika.abc.AbstractIncomingMessage
+        self, q_message: aio_pika.abc.AbstractIncomingMessage
     ) -> None:
-        async with message.process():
+        async with q_message.process():
             async with self.connection.channel() as channel:
-                msg = Message.from_json(message.body.decode())
-                self.conversation.add_user_request(msg.text)
-
+                msg = Message.from_json(q_message.body.decode())
+                conversation: Conversation = self.conversations[msg.conversation_uuid]
+                conversation.add(msg)
+                agent: Agent = await self.router.route(msg, conversation, self.agents)
                 LOG.info(
-                    "Routing (%s %s)",
-                    msg.uuid,
-                    msg.short_text(),
+                    "Routing to %s (%s %s)", agent.name, msg.uuid, msg.short_text()
                 )
-                agent: typing.Optional[Agent] = await self.router.route(
-                    msg, self.conversation, self.agents
-                )
-                if agent is None:
-                    agent = self.fallback_agent
-                LOG.info(
-                    "Routing to %s (%s %s)",
-                    agent.name,
-                    msg.uuid,
-                    msg.short_text(),
-                )
-
-                response: Message = await agent.process_message(msg, self.conversation)
-                self.conversation.add_agent_response(response.text)
+                conversation.add(await agent.reply_to(conversation))
                 exchange: aio_pika.abc.AbstractExchange = (
                     await channel.declare_exchange(
                         OUTPUT_EXCHANGE,
@@ -94,6 +79,8 @@ class Assistant:
                     )
                 )
                 await exchange.publish(
-                    aio_pika.Message(body=response.to_json().encode()),
+                    aio_pika.Message(
+                        body=conversation.last_message().to_json().encode()
+                    ),
                     routing_key="",
                 )

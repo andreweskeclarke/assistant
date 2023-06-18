@@ -1,6 +1,7 @@
 import asyncio
 import logging
 import typing
+import uuid
 
 import aio_pika
 import tornado.ioloop
@@ -19,16 +20,16 @@ class _In(Input):
         super().__init__(connection)
         self.queue = asyncio.Queue()
 
-    @property
-    def name(self) -> str:
+    @staticmethod
+    def name() -> str:
         return "jupyter-assistant-io-client"
 
-    async def get_input(self) -> typing.Tuple[str, dict]:
+    async def get_input(self) -> typing.Tuple[str, str, dict]:
         text = await self.queue.get()
         # prompt = "Use a Jupyter plugin when available. This is Jupyter code that I want assistance with:\n"
         # LOG.info("Forwarding: %s", prompt + text)
         # return prompt + text, {}
-        return text, {}
+        return text, str(uuid.uuid4()), {}
 
 
 class _Out(Output):

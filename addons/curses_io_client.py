@@ -4,6 +4,7 @@ import itertools
 import math
 import pathlib
 import typing
+import uuid
 
 import aio_pika
 from aiostream import stream
@@ -49,14 +50,15 @@ class CursesIOClient:
         def __init__(self, connection: aio_pika.Connection, queue: asyncio.Queue):
             super().__init__(connection)
             self.queue = queue
+            self.conversation = str(uuid.uuid4())
 
-        @property
-        def name(self) -> str:
+        @staticmethod
+        def name() -> str:
             return "curses-io-client"
 
-        async def get_input(self) -> typing.Tuple[str, dict]:
+        async def get_input(self) -> typing.Tuple[str, str, dict]:
             text = await self.queue.get()
-            return text, {}
+            return text, self.conversation, {}
 
     class _Out(Output):
         def __init__(

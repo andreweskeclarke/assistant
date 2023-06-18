@@ -22,37 +22,36 @@ class MainHandler(tornado.web.RequestHandler):
 
 
 class SmsHandler(tornado.web.RequestHandler):
-    def __init__(self, sms_input_client: SmsClientInput):
+    def initialize(self, sms_input_client: SmsClientInput):
         self.sms_input_client = sms_input_client
 
     async def get(self):
-        data = tornado.escape.json_decode(self.request.body)
-        LOG.info("SMS received")
-        LOG.info(data)
-        from_number = data.get("From", None)
-        text_message = data.get("Body", None)
+        from_number = self.get_argument("From", None)
+        text_message = self.get_argument("Body", None)
+        LOG.info("SMS received from %s: %s", from_number, text_message)
         if from_number is not None and text_message is not None:
-            await self.sms_input_client.queue.put(
+            self.sms_input_client.queue.put_nowait(
                 SmsText(from_number=from_number, text_message=text_message)
             )
-        else:
-            LOG.error(f"{from_number=} or {text_message=} is None")
         self.write(str(MessagingResponse()))
+        LOG.info("Tornado done processing SMS")
 
 
 async def main():
     LOG.info("Connecting to RabbitMQ")
     connection = await aio_pika.connect_robust("amqp://guest:guest@localhost/")
     LOG.info("Configuring Tornado")
+    sms_input = SmsClientInput(connection)
+    sms_output = SmsClientOutput(connection)
     app = tornado.web.Application(
         [
             (r"/", MainHandler),
-            (r"/sms", SmsHandler, dict(sms_input_client=SmsClientInput(connection))),
+            (r"/sms", SmsHandler, dict(sms_input_client=sms_input)),
         ]
     )
     app.listen(8080)
     LOG.info("Running")
-    await asyncio.gather(asyncio.Event().wait(), SmsClientOutput(connection).run())
+    await asyncio.gather(sms_input.run(), sms_output.run())
 
 
 if __name__ == "__main__":

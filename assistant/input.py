@@ -28,26 +28,26 @@ class Input:
     def __init__(self, connection: aio_pika.Connection):
         self.connection = connection
 
-    @property
-    def name(self) -> str:
+    @staticmethod
+    def name() -> str:
         """
         Give each Input class a descriptive, human readable name.
         The name will be used to identify messages arising from the Input subclass, with the field
-        `source: "<instance.name>.input"`
+        `source: "<instance.name>"` in the Message object.
         """
         raise NotImplementedError
 
     async def run(self) -> None:
         async with self.connection.channel() as channel:
             while True:
-                text, meta = await self.get_input()
+                text, conversation, meta = await self.get_input()
                 msg = Message(
                     text=text,
-                    source=self.name + ".input",
+                    source=self.name(),
                     meta=meta,
+                    conversation_uuid=conversation,
                 )
-                LOG.info("Input: %s", msg.short_text())
                 await publish_input(msg, channel)
 
-    async def get_input(self) -> typing.Tuple[str, dict]:
+    async def get_input(self) -> typing.Tuple[str, str, dict]:
         raise NotImplementedError()

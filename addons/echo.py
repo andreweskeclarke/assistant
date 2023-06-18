@@ -9,19 +9,24 @@ from assistant.message import Message
 LOG = logging.getLogger(__name__)
 
 
-class EchoPlugin(Agent):
-    @property
-    def name(self):
+class EchoAgent(Agent):
+    """
+    A dead simple Agent that echos messages, useful for testing and debugging.
+    """
+
+    @staticmethod
+    def name():
         return "Echo"
 
-    @property
-    def description(self):
+    @staticmethod
+    def description():
         return "Echoes the input message back to the user."
 
-    @property
-    def routing_prompt(self):
+    @staticmethod
+    def routing_prompt():
         return "Only use this plugin when the user explicitly wants some text repeated or echoed."
 
-    async def process_message(self, message: Message, _: Conversation) -> Message:
+    async def reply_to(self, conversation: Conversation) -> Message:
+        message = conversation.last_message()
         LOG.info("Echoing: %s", message)
-        return Message(message.text)
+        return message.evolve()

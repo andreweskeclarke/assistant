@@ -42,31 +42,29 @@ def _anki_invoke(action, **params):
 
 
 class AnkiPlugin(Agent):
-    def __init__(self, deck: str = 'Gigadeck') -> None:
+    def __init__(self, deck: str = "Gigadeck") -> None:
         super().__init__()
         self.deck = deck
 
-    @property
-    def name(self):
+    @staticmethod
+    def name():
         return "AnkiPlugin"
 
-    @property
-    def description(self):
+    @staticmethod
+    def description():
         return (
             "Connects to the Anki flashcard app, a tool for memorizing flashcards "
             "using spaced repetition."
         )
 
-    @property
-    def routing_prompt(self):
+    @staticmethod
+    def routing_prompt():
         return (
             "Use this plugin when the user asks for Anki explicitly, or if they ask to review cards, "
             "or if they ask to study, or some other similar quizzing request."
         )
 
-    async def process_message(
-        self, message: Message, conversation: Conversation
-    ) -> Message:
+    async def reply_to(self, conversation: Conversation) -> Message:
         # The annoying thing about Anki is that it doesn't provide a nice API.
         # We use AnkiConnect, which has to trigger GUI events for some API calls.
 
@@ -97,7 +95,8 @@ class AnkiPlugin(Agent):
         if last_message.startswith(answer_prefix):
             assert _anki_invoke("guiShowAnswer")
             assert _anki_invoke(
-                "guiAnswerCard", ease=AnkiEase[message.text.upper()].value
+                "guiAnswerCard",
+                ease=AnkiEase[conversation.last_message().text.upper()].value,
             )
 
         question = _anki_invoke("guiCurrentCard")["fields"]["Front"]["value"]

@@ -2,29 +2,19 @@ from __future__ import annotations
 
 import dataclasses
 import typing
+import uuid
 
-AGENT = "agent"
-USER = "user"
-
-
-@dataclasses.dataclass
-class Utterance:
-    source: str
-    text: str
+from assistant.message import Message
 
 
 @dataclasses.dataclass
 class Conversation:
-    utterances: typing.List[Utterance] = dataclasses.field(default_factory=list)
+    uuid: str = dataclasses.field(default_factory=lambda: str(uuid.uuid4()))
+    messages: typing.List[Message] = dataclasses.field(default_factory=list)
 
-    def agent_responses(self):
-        return list(filter(lambda m: m.source == AGENT, self.utterances))
+    def add(self, message: Message) -> None:
+        self.messages.append(message)
 
-    def add_agent_response(self, text: str):
-        self.utterances.append(Utterance(AGENT, text))
-
-    def user_requests(self):
-        return list(filter(lambda m: m.source == USER, self.utterances))
-
-    def add_user_request(self, text: str):
-        self.utterances.append(Utterance(USER, text))
+    def last_message(self) -> Message:
+        """User should check that there is at least one message in the conversation before calling this method."""
+        return self.messages[-1]

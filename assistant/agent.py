@@ -16,19 +16,17 @@ class Agent:
     The name, description, and routing prompt are all used to route messages to agents.
     """
 
-    @property
-    def name(self):
+    @staticmethod
+    def name():
         raise NotImplementedError()
 
-    @property
-    def description(self):
+    @staticmethod
+    def description():
         raise NotImplementedError()
 
-    @property
-    def routing_prompt(self):
+    @staticmethod
+    def routing_prompt():
         raise NotImplementedError()
 
-    async def process_message(
-        self, message: Message, conversation: Conversation
-    ) -> Message:
+    async def reply_to(self, conversation: Conversation) -> Message:
         raise NotImplementedError()
