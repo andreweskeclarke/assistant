@@ -1,13 +1,13 @@
 from __future__ import annotations
 
 import asyncio
-import collections
 import logging
 import typing
 
 import aio_pika
 
 from assistant.conversation import Conversation
+from assistant.conversation_manager import ConversationsManager
 from assistant.message import Message
 
 if typing.TYPE_CHECKING:
@@ -47,11 +47,10 @@ class Assistant:
         self,
         connection: aio_pika.abc.AbstractRobustConnection,
         router: Router,
+        conversations_manager: ConversationsManager,
     ) -> None:
         self.connection = connection
-        self.conversations: typing.Dict[str, Conversation] = collections.defaultdict(
-            Conversation
-        )
+        self.conversations_manager: ConversationsManager = conversations_manager
         self.agents: typing.List[Agent] = []
         self.router = router
 
@@ -83,11 +82,25 @@ class Assistant:
                 )
 
     async def on_message(self, message: Message) -> Message:
-        conversation: Conversation = self.conversations[message.conversation_uuid]
-        conversation.add(message)
-        agent: Agent = await self.router.route(conversation, self.agents)
-        LOG.info('Routing message %s to agent "%s"', message, agent.name)
-        response_message = await agent.reply_to(conversation)
-        conversation.add(response_message)
-        LOG.info("Agent replied with %s", response_message)
-        return response_message
+        conversation: Conversation = await self.conversations_manager.add_message(
+            message
+        )
+
+        try:
+            agent: Agent = await self.router.route(conversation, self.agents)
+            LOG.info('Routing message %s to agent "%s"', message, agent.name)
+        except Exception as exception:  # pylint: disable=broad-exception-caught
+            LOG.exception(exception)
+            return message.evolve(
+                source="Assistant", text=f"Routing Error: {exception}"
+            )
+
+        try:
+            response: Message = await agent.reply_to(conversation)
+            LOG.info("Agent replied with %s", response)
+        except Exception as exception:  # pylint: disable=broad-exception-caught
+            LOG.exception(exception)
+            return message.evolve(source="Assistant", text=f"Agent Error: {exception}")
+
+        await self.conversations_manager.add_message(response)
+        return response
