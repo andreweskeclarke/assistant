@@ -30,7 +30,7 @@ test: check
 	$(PYTEST) ./tests/
 
 .PHONY: all
-all: test freeze
+all: test
 	@echo "\n\033[1;32m--- SUCCESS ---\033[0m"
 
 .PHONY: clean
