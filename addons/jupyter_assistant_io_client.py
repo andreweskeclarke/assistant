@@ -26,9 +26,6 @@ class _In(Input):
 
     async def get_input(self) -> typing.Tuple[str, str, dict]:
         text = await self.queue.get()
-        # prompt = "Use a Jupyter plugin when available. This is Jupyter code that I want assistance with:\n"
-        # LOG.info("Forwarding: %s", prompt + text)
-        # return prompt + text, {}
         return text, str(uuid.uuid4()), {}
 
 
@@ -51,11 +48,11 @@ class WebSocketHandler(
         self.outputs.callback = lambda m: self.write_message(m.to_json())
 
     def check_origin(self, _):
-        return True  # TODO: Not production safe
+        return True
 
     def on_message(self, message):
         LOG.info("Received message from Jupyter assistant: %s", message)
-        self.inputs.queue.put_nowait(message)  # TODO: handle QueueFull exceptions
+        self.inputs.queue.put_nowait(message)
 
 
 class JupyterAssistantIoClient:

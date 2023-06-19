@@ -16,5 +16,8 @@ class Conversation:
         self.messages.append(message)
 
     def last_message(self) -> Message:
-        """User should check that there is at least one message in the conversation before calling this method."""
+        """
+        User should check that there is at least one message in the conversation
+        before calling this method.
+        """
         return self.messages[-1]

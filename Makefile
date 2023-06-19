@@ -3,7 +3,7 @@
 CONDA_ENV = ./env
 CONDA_BIN = $(CONDA_ENV)/bin
 PYTHON = PYTHONPATH=. $(CONDA_BIN)/python
-CODE = ./assistant/ ./tests/
+CODE = ./assistant/ ./addons/ ./scripts/ ./tests/
 ACTIVATE = conda init bash && conda activate $(CONDA_ENV)
 
 .PHONY: black
@@ -35,7 +35,3 @@ all: test freeze
 .PHONY: clean
 clean:
 	find . -type f -name '*.py[co]' -delete -o -type d -name __pycache__ -delete
-
-.PHONY: run
-run:
-	$(PYTHON) assistant/scripts/$(script).py

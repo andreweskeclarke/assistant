@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-
+# pylint: disable=attribute-defined-outside-init
 from __future__ import annotations
 
 import asyncio
@@ -17,6 +17,9 @@ LOG = logging.getLogger(__name__)
 
 
 class MainHandler(tornado.web.RequestHandler):
+    def data_received(self, _):
+        pass
+
     def get(self):
         self.write("Lonel.ai")
 
@@ -24,6 +27,9 @@ class MainHandler(tornado.web.RequestHandler):
 class SmsHandler(tornado.web.RequestHandler):
     def initialize(self, sms_input_client: SmsClientInput):
         self.sms_input_client = sms_input_client
+
+    def data_received(self, _):
+        pass
 
     async def get(self):
         from_number = self.get_argument("From", None)
@@ -46,7 +52,7 @@ async def main():
     app = tornado.web.Application(
         [
             (r"/", MainHandler),
-            (r"/sms", SmsHandler, dict(sms_input_client=sms_input)),
+            (r"/sms", SmsHandler, {"sms_input_client": sms_input}),
         ]
     )
     app.listen(8080)

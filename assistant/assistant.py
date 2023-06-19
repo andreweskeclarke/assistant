@@ -7,10 +7,12 @@ import typing
 
 import aio_pika
 
-from assistant.agent import Agent
-from assistant.agent_router import AgentRouter
 from assistant.conversation import Conversation
 from assistant.message import Message
+
+if typing.TYPE_CHECKING:
+    from assistant.agent import Agent
+    from assistant.router import Router
 
 LOG = logging.getLogger(__name__)
 INPUTS_QUEUE = "inputs"
@@ -42,10 +44,10 @@ class Assistant:
     def __init__(
         self,
         connection: aio_pika.Connection,
-        router: AgentRouter,
+        router: Router,
     ) -> None:
         self.connection = connection
-        self.conversations: typing.Dict[str, Conversation] = collections.defaultdict()
+        self.conversations = collections.defaultdict(Conversation)
         self.agents: typing.List[Agent] = []
         self.router = router
 
@@ -57,7 +59,7 @@ class Assistant:
             queue = await channel.declare_queue(INPUTS_QUEUE)
             await queue.consume(self.on_input_message)
             while True:
-                await asyncio.sleep(0.1)
+                await asyncio.sleep(0.001)
 
     async def on_input_message(
         self, q_message: aio_pika.abc.AbstractIncomingMessage
@@ -67,11 +69,10 @@ class Assistant:
                 msg = Message.from_json(q_message.body.decode())
                 conversation: Conversation = self.conversations[msg.conversation_uuid]
                 conversation.add(msg)
-                agent: Agent = await self.router.route(msg, conversation, self.agents)
-                LOG.info(
-                    "Routing to %s (%s %s)", agent.name, msg.uuid, msg.short_text()
-                )
+                agent: Agent = await self.router.route(conversation, self.agents)
+                LOG.info('Routing message %s to agent "%s"', msg, agent.name)
                 conversation.add(await agent.reply_to(conversation))
+                LOG.info("Agent replied with %s", conversation.last_message())
                 exchange: aio_pika.abc.AbstractExchange = (
                     await channel.declare_exchange(
                         OUTPUT_EXCHANGE,

@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import logging
 import typing
 
 from assistant.assistant import publish_input
@@ -8,9 +7,6 @@ from assistant.message import Message
 
 if typing.TYPE_CHECKING:
     import aio_pika
-
-
-LOG = logging.getLogger(__name__)
 
 
 class Input:

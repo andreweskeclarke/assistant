@@ -1,3 +1,4 @@
+# pylint: disable=consider-using-with
 from __future__ import annotations
 
 import json
@@ -45,24 +46,6 @@ class AnkiPlugin(Agent):
     def __init__(self, deck: str = "Gigadeck") -> None:
         super().__init__()
         self.deck = deck
-
-    @staticmethod
-    def name():
-        return "AnkiPlugin"
-
-    @staticmethod
-    def description():
-        return (
-            "Connects to the Anki flashcard app, a tool for memorizing flashcards "
-            "using spaced repetition."
-        )
-
-    @staticmethod
-    def routing_prompt():
-        return (
-            "Use this plugin when the user asks for Anki explicitly, or if they ask to review cards, "
-            "or if they ask to study, or some other similar quizzing request."
-        )
 
     async def reply_to(self, conversation: Conversation) -> Message:
         # The annoying thing about Anki is that it doesn't provide a nice API.

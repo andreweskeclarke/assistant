@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import asyncio
-import logging
 import typing
 
 from assistant.assistant import bind_output_handler
@@ -9,9 +8,6 @@ from assistant.message import Message
 
 if typing.TYPE_CHECKING:
     import aio_pika
-
-
-LOG = logging.getLogger(__name__)
 
 
 class Output:

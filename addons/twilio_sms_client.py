@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import asyncio
-import collections
 import dataclasses
 import logging
 import os
@@ -14,7 +13,6 @@ from twilio.rest import Client
 from assistant.input import Input
 from assistant.message import Message
 from assistant.output import Output
-from assistant.util.logging import init_logging
 
 TWILIO_ACCOUNT_SID = os.environ["TWILIO_ACCOUNT_SID"]
 TWILIO_AUTH_TOKEN = os.environ["TWILIO_AUTH_TOKEN"]
@@ -33,7 +31,7 @@ class SmsClientInput(Input):
     def __init__(self, connection: aio_pika.Connection):
         super().__init__(connection)
         self.queue = asyncio.Queue()
-        self.sms_conversation_uuids = dict()
+        self.sms_conversation_uuids = {}
 
     @staticmethod
     def name() -> str:
@@ -62,6 +60,6 @@ class SmsClientOutput(Output):
             client.messages.create(
                 body=text_message, from_=TWILIO_PHONE_NUMBER, to=phone_number
             )
-            LOG.info(f"SMS sent to {phone_number}: {text_message}")
+            LOG.info("SMS sent to %s: %s", phone_number, text_message)
         else:
-            LOG.info(f"Message ignored: {msg.uuid}")
+            LOG.info("Message dropped: %s", msg)

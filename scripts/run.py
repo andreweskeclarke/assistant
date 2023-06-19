@@ -7,9 +7,9 @@ import logging
 
 import aio_pika
 
-from addons.chatgpt_texting import ChatGptTextingPlugin
-from addons.none_router import NoneRouter
+from addons.chatgpt_agents import ChatGptTextingAgent
 from assistant.assistant import Assistant
+from assistant.router import RouteToFirstPluginRouter
 from assistant.util.logging import init_logging
 
 LOG = logging.getLogger(__name__)
@@ -19,12 +19,8 @@ async def main():
     logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(name)s] %(message)s")
     LOG.info("Starting")
     connection = await aio_pika.connect_robust("amqp://guest:guest@localhost/")
-    router = Assistant(
-        connection,
-        router=NoneRouter(),
-        fallback_agent=ChatGptTextingPlugin(),
-    )
-
+    router = Assistant(connection, router=RouteToFirstPluginRouter())
+    router.register_agent(ChatGptTextingAgent())
     await asyncio.gather(router.run())
 
 

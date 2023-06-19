@@ -31,21 +31,13 @@ def add_comment_markers(text):
 
 
 class JupyterAssistantAgent(Agent):
-    @staticmethod
-    def name():
-        return "JupyterAssistant"
-
-    @staticmethod
-    def description():
-        return "This Jupyter assistant can help uses auto complete their code."
-
-    @staticmethod
-    def routing_prompt():
-        return "Receives Jupyter code, cells, and suggestions and auto completes a new cell based on the user request."
-
     async def reply_to(self, conversation: Conversation) -> Message:
         message = conversation.last_message()
-        prompt = "The following is some Jupyter python code, its outputs, and a comment asking you to fill in some code. Please return the python code wrapped as ```python```:\n"
+        prompt = (
+            "The following is some Jupyter python code, its outputs, "
+            "and a comment asking you to fill in some code. "
+            "Please return the python code wrapped as ```python```:\n"
+        )
         max_length = 10000 - len(prompt)
         messages = [
             {
@@ -64,8 +56,7 @@ class JupyterAssistantAgent(Agent):
         )
         response_content = add_comment_markers(response.choices[0].message.content)
         LOG.info("ChatGPT replied: '%s'", response_content)
-        return Message(
+        return message.evolve(
             text=response_content,
             source="jupyter-assistant-plugin",
-            meta={"originating_source": message.source},
         )
