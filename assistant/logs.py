@@ -6,7 +6,7 @@ import logging
 import pathlib
 import sys
 
-from aiostream import stream
+from aiostream import stream  # type: ignore
 
 LOG_DIR = pathlib.Path("./logs/")
 

@@ -18,7 +18,7 @@ LOG = logging.getLogger(__name__)
 class _In(Input):
     def __init__(self, connection: aio_pika.Connection):
         super().__init__(connection)
-        self.queue = asyncio.Queue()
+        self.queue: asyncio.Queue = asyncio.Queue()
 
     @staticmethod
     def name() -> str:
@@ -32,7 +32,7 @@ class _In(Input):
 class _Out(Output):
     def __init__(self, connection: aio_pika.Connection):
         super().__init__(connection)
-        self.callback = lambda _: None
+        self.callback: typing.Callable[[Message], None] = lambda _: None
 
     async def handle_message(self, msg: Message) -> None:
         if "jupyter-assistant" in msg.source:
@@ -45,7 +45,10 @@ class WebSocketHandler(
     def initialize(self, inputs: _In, outputs: _Out):
         self.inputs = inputs  # pylint: disable=attribute-defined-outside-init
         self.outputs = outputs  # pylint: disable=attribute-defined-outside-init
-        self.outputs.callback = lambda m: self.write_message(m.to_json())
+        self.outputs.callback = self.output_callback
+
+    def output_callback(self, message: Message) -> None:
+        self.write_message(message.to_json())
 
     def check_origin(self, _):
         return True

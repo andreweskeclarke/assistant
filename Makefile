@@ -16,6 +16,10 @@ lint: black
 	$(CONDA_BIN)/pylint -j 0 $(CODE)
 	$(CONDA_BIN)/flake8 $(CODE)
 
+.PHONY: check
+check: lint
+	$(CONDA_BIN)/mypy $(CODE)
+
 .PHONY: freeze
 freeze:
 	conda env export | grep -v "^prefix:" > environment.yml

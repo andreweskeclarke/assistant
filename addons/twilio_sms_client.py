@@ -30,8 +30,8 @@ class SmsText:
 class SmsClientInput(Input):
     def __init__(self, connection: aio_pika.Connection):
         super().__init__(connection)
-        self.queue = asyncio.Queue()
-        self.sms_conversation_uuids = {}
+        self.queue: asyncio.Queue = asyncio.Queue()
+        self.sms_conversation_uuids: typing.Dict[str, str] = {}
 
     @staticmethod
     def name() -> str:

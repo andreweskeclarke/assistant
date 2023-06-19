@@ -23,14 +23,16 @@ class RoutingError(Exception):
     pass
 
 
-async def publish_input(msg: Message, channel: aio_pika.Channel) -> None:
+async def publish_input(msg: Message, channel: aio_pika.abc.AbstractChannel) -> None:
     await channel.default_exchange.publish(
         aio_pika.Message(body=msg.to_json().encode()),
         routing_key=INPUTS_QUEUE,
     )
 
 
-async def bind_output_handler(handler: typing.Any, channel: aio_pika.Channel) -> None:
+async def bind_output_handler(
+    handler: typing.Any, channel: aio_pika.abc.AbstractChannel
+) -> None:
     await channel.set_qos(prefetch_count=1)
     exchange = await channel.declare_exchange(
         OUTPUT_EXCHANGE, aio_pika.ExchangeType.FANOUT
@@ -47,7 +49,9 @@ class Assistant:
         router: Router,
     ) -> None:
         self.connection = connection
-        self.conversations = collections.defaultdict(Conversation)
+        self.conversations: typing.Dict[str, Conversation] = collections.defaultdict(
+            Conversation
+        )
         self.agents: typing.List[Agent] = []
         self.router = router
 

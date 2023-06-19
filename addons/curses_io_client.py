@@ -7,7 +7,7 @@ import typing
 import uuid
 
 import aio_pika
-from aiostream import stream
+from aiostream import stream  # type: ignore
 
 from assistant.input import Input
 from assistant.message import Message
@@ -73,10 +73,10 @@ class CursesIOClient:
             self.message_buffer.append(f"<out> {msg.text}")
 
     def __init__(self, connection) -> None:
-        self.inputs_queue = asyncio.Queue()
+        self.inputs_queue: asyncio.Queue = asyncio.Queue()
         self.input = CursesIOClient._In(connection, self.inputs_queue)
         self.log_buffer = list(tail_logs())
-        self.message_buffer = []
+        self.message_buffer: typing.List[str] = []
         self.output = CursesIOClient._Out(connection, self.message_buffer)
 
     async def run(self):

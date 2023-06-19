@@ -32,8 +32,8 @@ class Output:
 
     async def _message_handler(self, msg: aio_pika.IncomingMessage):
         async with msg.process():
-            msg = Message.from_json(msg.body.decode())
-            await self.handle_message(msg)
+            message = Message.from_json(msg.body.decode())
+            await self.handle_message(message)
 
     async def handle_message(self, msg: Message) -> None:
         raise NotImplementedError()

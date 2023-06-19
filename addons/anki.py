@@ -61,9 +61,7 @@ class AnkiPlugin(Agent):
 
         question_prefix = "Anki Question: "
         answer_prefix = "Anki Answer: "
-        last_message = ""
-        if conversation.agent_responses():
-            last_message = conversation.agent_responses()[-1].text
+        last_message = conversation.last_message().text
 
         # Show the user the Anki note answer
         if last_message.startswith(question_prefix):
