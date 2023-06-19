@@ -348,6 +348,8 @@ dependencies:
   - pip:
       - aio-pika==9.0.5
       - aioconsole==0.6.1
+      - aiocsv==1.2.4
+      - aiofiles==23.1.0
       - aiohttp==3.8.4
       - aiohttp-retry==2.8.3
       - aiormq==6.7.4
@@ -444,7 +446,7 @@ dependencies:
       - psutil==5.9.4
       - pyarrow==11.0.0
       - pydub==0.25.1
-      - pygments==2.14.0
+      - pygments==2.11.2
       - pyjwt==2.7.0
       - pylint==2.17.1
       - pyqt5-sip==12.11.0
@@ -481,6 +483,7 @@ dependencies:
       - triton==2.0.0
       - twilio==8.3.0
       - twilio-stubs==0.2.0
+      - types-aiofiles==23.1.0.4
       - types-requests==2.31.0.1
       - types-urllib3==1.26.25.13
       - typing-extensions==4.5.0
