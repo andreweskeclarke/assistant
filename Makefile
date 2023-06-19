@@ -3,8 +3,13 @@
 CONDA_ENV = ./env
 CONDA_BIN = $(CONDA_ENV)/bin
 PYTHON = PYTHONPATH=. $(CONDA_BIN)/python
+PYTEST = PYTHONPATH=. $(CONDA_BIN)/pytest
 CODE = ./assistant/ ./addons/ ./scripts/ ./tests/
 ACTIVATE = conda init bash && conda activate $(CONDA_ENV)
+
+.PHONY: freeze
+freeze:
+	conda env export | grep -v "^prefix:" > environment.yml
 
 .PHONY: black
 black:
@@ -20,17 +25,9 @@ lint: black
 check: lint
 	$(CONDA_BIN)/mypy $(CODE)
 
-.PHONY: freeze
-freeze:
-	conda env export | grep -v "^prefix:" > environment.yml
-
-.PHONY: update
-update:
-	conda env update --prefix ./env --file environment.yml --prune
-
 .PHONY: test
-test: lint
-	$(PYTHON) -m unittest discover -s ./tests/
+test: check
+	$(PYTEST) ./tests/
 
 .PHONY: all
 all: test freeze
@@ -39,3 +36,7 @@ all: test freeze
 .PHONY: clean
 clean:
 	find . -type f -name '*.py[co]' -delete -o -type d -name __pycache__ -delete
+
+.PHONY: update
+update:
+	conda env update --prefix ./env --file environment.yml --prune

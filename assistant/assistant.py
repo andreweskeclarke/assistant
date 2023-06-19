@@ -45,7 +45,7 @@ async def bind_output_handler(
 class Assistant:
     def __init__(
         self,
-        connection: aio_pika.Connection,
+        connection: aio_pika.abc.AbstractRobustConnection,
         router: Router,
     ) -> None:
         self.connection = connection
@@ -61,22 +61,16 @@ class Assistant:
     async def run(self) -> None:
         async with self.connection.channel() as channel:
             queue = await channel.declare_queue(INPUTS_QUEUE)
-            await queue.consume(self.on_input_message)
-            while True:
-                await asyncio.sleep(0.001)
+            await queue.consume(self.on_aiopika_message)
+            await asyncio.Event().wait()
 
-    async def on_input_message(
+    async def on_aiopika_message(
         self, q_message: aio_pika.abc.AbstractIncomingMessage
     ) -> None:
         async with q_message.process():
             async with self.connection.channel() as channel:
                 msg = Message.from_json(q_message.body.decode())
-                conversation: Conversation = self.conversations[msg.conversation_uuid]
-                conversation.add(msg)
-                agent: Agent = await self.router.route(conversation, self.agents)
-                LOG.info('Routing message %s to agent "%s"', msg, agent.name)
-                conversation.add(await agent.reply_to(conversation))
-                LOG.info("Agent replied with %s", conversation.last_message())
+                response_message = await self.on_message(msg)
                 exchange: aio_pika.abc.AbstractExchange = (
                     await channel.declare_exchange(
                         OUTPUT_EXCHANGE,
@@ -84,8 +78,16 @@ class Assistant:
                     )
                 )
                 await exchange.publish(
-                    aio_pika.Message(
-                        body=conversation.last_message().to_json().encode()
-                    ),
+                    aio_pika.Message(body=response_message.to_json().encode()),
                     routing_key="",
                 )
+
+    async def on_message(self, message: Message) -> Message:
+        conversation: Conversation = self.conversations[message.conversation_uuid]
+        conversation.add(message)
+        agent: Agent = await self.router.route(conversation, self.agents)
+        LOG.info('Routing message %s to agent "%s"', message, agent.name)
+        response_message = await agent.reply_to(conversation)
+        conversation.add(response_message)
+        LOG.info("Agent replied with %s", response_message)
+        return response_message
