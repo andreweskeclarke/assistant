@@ -4,7 +4,8 @@ CONDA_ENV = ./env
 CONDA_BIN = $(CONDA_ENV)/bin
 PYTHON = PYTHONPATH=. $(CONDA_BIN)/python
 PYTEST = PYTHONPATH=. $(CONDA_BIN)/pytest
-CODE = ./assistant/ ./addons/ ./scripts/ ./tests/
+CODE := $(shell find . -name *.py  -not -path "./env/*")
+
 ACTIVATE = conda init bash && conda activate $(CONDA_ENV)
 
 .PHONY: freeze
@@ -13,17 +14,17 @@ freeze:
 
 .PHONY: black
 black:
-	$(CONDA_BIN)/isort $(CODE)
-	$(CONDA_BIN)/black $(CODE)
+	@$(CONDA_BIN)/isort ${CODE}
+	@$(CONDA_BIN)/black $(CODE)
 
 .PHONY: lint
 lint: black
-	$(CONDA_BIN)/pylint -j 0 $(CODE)
-	$(CONDA_BIN)/flake8 $(CODE)
+	@$(CONDA_BIN)/pylint -j 0 $(CODE)
+	@$(CONDA_BIN)/flake8 $(CODE)
 
 .PHONY: check
 check: lint
-	$(CONDA_BIN)/mypy $(CODE)
+	@$(CONDA_BIN)/mypy $(CODE)
 
 .PHONY: test
 test: check
